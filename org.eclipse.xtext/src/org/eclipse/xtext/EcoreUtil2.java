@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.common.util.AbstractTreeIterator;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.SegmentSequence;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
@@ -41,6 +42,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.EClassImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -55,10 +57,10 @@ import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.Strings;
 
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -773,4 +775,58 @@ public class EcoreUtil2 extends EcoreUtil {
 			}
 		};
 	}
+	
+	public static URI getPathURI(final EObject object) {
+		Resource resource = object.eResource();
+		if(resource != null) {
+			String fragment = getPathURIFragment(object);
+			URI resourceURI = getPlatformResourceOrNormalizedURI(resource);
+			return resourceURI.appendFragment(fragment);
+		} else {
+			return getPlatformResourceOrNormalizedURI(object);
+		}
+	}
+
+	public static String getPathURIFragment(EObject object) {
+		SegmentSequence.Builder builder = SegmentSequence.newBuilder("/");
+		InternalEObject internalEObject = (InternalEObject) object;
+		boolean isContained = internalEObject.eDirectResource() != null;
+		for (InternalEObject container = internalEObject.eInternalContainer(); 
+			container != null && !isContained; 
+			container = internalEObject.eInternalContainer()) {
+			builder.append(getPathURIFragment(container, internalEObject.eContainingFeature(), internalEObject));
+			internalEObject = container;
+			if (container.eDirectResource() != null) {
+				isContained = true;
+			}
+		}
+		if (!isContained) {
+			return "/-1";
+		}
+		builder.append(getURIFragmentRootSegment(internalEObject));
+		builder.append("");
+		builder.reverse();
+		return builder.toSegmentSequence().toString();
+	}
+	
+	protected static String getPathURIFragment(InternalEObject container, EStructuralFeature feature, InternalEObject contained) {
+	    StringBuilder result = new StringBuilder();
+	    result.append('@');
+	    result.append(feature.getName());
+	    if(feature.isMany()) {
+	    	int index = ((List<EObject>) container.eGet(feature)).indexOf(contained);
+	    	result.append(".");
+	    	result.append(index);
+	    }
+	    return result.toString();
+	}
+	
+	protected static String getURIFragmentRootSegment(EObject eObject) {
+		List<EObject> contents = eObject.eResource().getContents();
+		if (contents.size() > 1)
+			return Integer.toString(contents.indexOf(eObject));
+		else
+			return "";
+	}
+
 }
