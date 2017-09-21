@@ -5,7 +5,7 @@
 
 apply plugin: 'io.typefox.gradle.p2gen'
 
-group = 'org.eclipse.xtext'
+group = 'de.maggu2810.thirdparty.org.eclipse.xtext'
 
 p2gen {
 	tychoVersion '1.0.0'
