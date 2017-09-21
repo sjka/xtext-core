@@ -29,7 +29,7 @@ def configurePom = { pom ->
 // We need to wait until the project's own build file has been executed
 // so we can use the title and description settings for setting up Maven publishing.
 afterEvaluate {
-	
+
 	task createLocalMavenRepo(type: Upload) {
 		group = 'Upload'
 		description = 'Create or update the local Maven repository'
@@ -39,5 +39,22 @@ afterEvaluate {
 			configurePom(pom)
 		}
 	}
-	
+
+	task uploadToBintray(type: Upload) {
+		group = 'Upload'
+		description = 'Create or update the Bintray repository'
+		configuration = configurations.archives
+		repositories.mavenDeployer {
+			repository(
+				url: 'https://api.bintray.com/maven/maggu2810/maven/xtext-core'
+			) {
+				authentication(
+					userName: 'maggu2810',
+					password: 'set-api-key'
+				)
+			}
+			configurePom(pom)
+		}
+	}
+
 }
