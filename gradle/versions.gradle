@@ -2,10 +2,10 @@
  * Base project version and versions of common dependencies.
  */
 
-version = '2.12.0'
+version = '2.12.0.sp1'
 
 ext.versions = [
-	'xtext': version,
+	'xtext': '2.12.0',
 	'xtext_bootstrap': '2.11.0',
 	'gradle_plugins': '0.1.0',
 	'xtext_gradle_plugin': '1.0.17',
