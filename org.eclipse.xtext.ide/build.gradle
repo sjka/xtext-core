@@ -4,4 +4,6 @@ description = 'Platform-independent language support.'
 dependencies {
 	compile project(':org.eclipse.xtext')
 	compile "org.eclipse.lsp4j:org.eclipse.lsp4j:$versions.lsp4j"
+	compile ("org.eclipse.xtext:org.eclipse.xtext.xbase.lib:2.12.0"){ force=true }
+	compile ("org.eclipse.xtend:org.eclipse.xtend.lib:2.12.0"){ force=true }
 }
